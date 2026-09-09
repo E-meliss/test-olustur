@@ -9,6 +9,13 @@ const sonucPanel = document.getElementById("sonuc-panel");
 const kagitIcerik = document.getElementById("kagit-icerik");
 const hataMesaji = document.getElementById("hata-mesaji");
 const cevapToggle = document.getElementById("cevap-goster-toggle");
+const revizeForm = document.getElementById("revize-form");
+const revizeIstekAlani = document.getElementById("revize-istek");
+const revizeButon = document.getElementById("revize-buton");
+const revizeDurum = document.getElementById("revize-durum");
+const revizeHata = document.getElementById("revize-hata");
+
+let sonUretilenVeri = null;
 
 dersSelect.addEventListener("change", () => {
   dersDiger.style.display = dersSelect.value === "diger" ? "block" : "none";
@@ -29,19 +36,55 @@ document.getElementById("yeni-kagit-buton").addEventListener("click", () => {
   sonucPanel.hidden = true;
   formPanel.hidden = false;
   hataMesaji.hidden = true;
+  sonUretilenVeri = null;
 });
 
-document.getElementById("yazdir-buton").addEventListener("click", () => window.print());
+document
+  .getElementById("yazdir-buton")
+  .addEventListener("click", () => window.print());
 
 cevapToggle.addEventListener("change", () => {
   kagitIcerik.classList.toggle("cevaplar-gizli", !cevapToggle.checked);
 });
 
+async function workerIstegiGonder(payload, timeoutMs = 75_000) {
+  const controller = new AbortController();
+  const zamanAsimi = setTimeout(() => controller.abort(), timeoutMs);
+  let yanit;
+  try {
+    yanit = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(zamanAsimi);
+  }
+
+  if (!yanit.ok) {
+    const detay = await yanit.text().catch(() => "");
+    throw new Error(`Sunucu hatası (${yanit.status}). ${detay.slice(0, 200)}`);
+  }
+  const veri = await yanit.json();
+  if (veri.hata) throw new Error(veri.hata);
+  return veri;
+}
+
+function zamanAsimiMesaji(err) {
+  return err.name === "AbortError"
+    ? "İstek çok uzun sürdü ve zaman aşımına uğradı. Lütfen tekrar deneyin."
+    : null;
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hataMesaji.hidden = true;
 
-  const ders = dersSelect.value === "diger" ? (dersDiger.value.trim() || "Ders") : dersSelect.value;
+  const ders =
+    dersSelect.value === "diger"
+      ? dersDiger.value.trim() || "Ders"
+      : dersSelect.value;
   const payload = {
     ders,
     sinif: document.getElementById("sinif").value,
@@ -57,32 +100,13 @@ form.addEventListener("submit", async (e) => {
   sonucPanel.hidden = true;
 
   try {
-    const controller = new AbortController();
-    const zamanAsimi = setTimeout(() => controller.abort(), 75_000); // 75 sn güvenlik sınırı
-
-    let yanit;
-    try {
-      yanit = await fetch(WORKER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(zamanAsimi);
-    }
-
-    if (!yanit.ok) {
-      const detay = await yanit.text().catch(() => "");
-      throw new Error(`Sunucu hatası (${yanit.status}). ${detay.slice(0, 200)}`);
-    }
-
-    const veri = await yanit.json();
-    if (veri.hata) throw new Error(veri.hata);
-
+    const veri = await workerIstegiGonder(payload);
+    sonUretilenVeri = veri;
     renderKagit(veri);
     cevapToggle.checked = false;
     kagitIcerik.classList.add("cevaplar-gizli");
+    revizeIstekAlani.value = "";
+    revizeHata.hidden = true;
     yukleniyorPanel.hidden = true;
     sonucPanel.hidden = false;
   } catch (err) {
@@ -90,15 +114,59 @@ form.addEventListener("submit", async (e) => {
     yukleniyorPanel.hidden = true;
     formPanel.hidden = false;
     hataMesaji.hidden = false;
-    if (err.name === "AbortError") {
-      hataMesaji.textContent =
-        "İstek çok uzun sürdü ve zaman aşımına uğradı. Lütfen soru sayısını azaltıp " +
-        "veya daha yaygın bilinen bir ünite/konu adı yazıp tekrar deneyin.";
-    } else {
-      hataMesaji.textContent =
-        "Kâğıt oluşturulamadı: " + err.message +
+    hataMesaji.textContent =
+      zamanAsimiMesaji(err) ||
+      "Kâğıt oluşturulamadı: " +
+        err.message +
         " — Worker adresinin doğru girildiğinden ve API anahtarının tanımlı olduğundan emin olun.";
-    }
+  }
+});
+
+revizeForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  revizeHata.hidden = true;
+
+  const istek = revizeIstekAlani.value.trim();
+  if (!istek) {
+    revizeHata.hidden = false;
+    revizeHata.textContent = "Lütfen ne değiştirmek istediğinizi yazın.";
+    return;
+  }
+  if (!sonUretilenVeri) {
+    revizeHata.hidden = false;
+    revizeHata.textContent =
+      "Düzenlenecek bir kâğıt bulunamadı. Önce bir kâğıt oluşturun.";
+    return;
+  }
+
+  revizeButon.disabled = true;
+  revizeIstekAlani.disabled = true;
+  revizeDurum.textContent = "Düzenleniyor…";
+
+  try {
+    const veri = await workerIstegiGonder(
+      { revizeIstek: istek, oncekiVeri: sonUretilenVeri },
+      75_000,
+    );
+    sonUretilenVeri = veri;
+    const cevaplarGorunuyorMuydu = cevapToggle.checked;
+    renderKagit(veri);
+    cevapToggle.checked = cevaplarGorunuyorMuydu;
+    kagitIcerik.classList.toggle("cevaplar-gizli", !cevaplarGorunuyorMuydu);
+    revizeIstekAlani.value = "";
+    revizeDurum.textContent = "Güncellendi ✓";
+    setTimeout(() => {
+      revizeDurum.textContent = "";
+    }, 4000);
+  } catch (err) {
+    console.error(err);
+    revizeDurum.textContent = "";
+    revizeHata.hidden = false;
+    revizeHata.textContent =
+      zamanAsimiMesaji(err) || "Düzenleme yapılamadı: " + err.message;
+  } finally {
+    revizeButon.disabled = false;
+    revizeIstekAlani.disabled = false;
   }
 });
 
@@ -130,14 +198,21 @@ function renderKagit(veri) {
   (veri.sorular || []).forEach((soru) => {
     const baglamParagraflari = Array.isArray(soru.baglam_metni)
       ? soru.baglam_metni.filter((p) => p && p.trim())
-      : (soru.baglam_metni && soru.baglam_metni.trim() ? [soru.baglam_metni] : []);
+      : soru.baglam_metni && soru.baglam_metni.trim()
+        ? [soru.baglam_metni]
+        : [];
 
-    if (baglamParagraflari.length || (soru.baglam_baslik && soru.baglam_baslik.trim())) {
+    if (
+      baglamParagraflari.length ||
+      (soru.baglam_baslik && soru.baglam_baslik.trim())
+    ) {
       html += `<div class="baglam-kutu">`;
       if (soru.baglam_baslik && soru.baglam_baslik.trim()) {
         html += `<p class="baglam-baslik">${kacir(soru.baglam_baslik)}</p>`;
       }
-      baglamParagraflari.forEach((p) => { html += `<p>${kacir(p)}</p>`; });
+      baglamParagraflari.forEach((p) => {
+        html += `<p>${kacir(p)}</p>`;
+      });
       html += `</div>`;
     }
 
@@ -151,7 +226,8 @@ function renderKagit(veri) {
       </li>`;
     });
     html += `</ul>`;
-    if (soru.kazanim) html += `<p class="kazanim-etiketi">Kazanım/süreç bileşeni: ${kacir(soru.kazanim)}</p>`;
+    if (soru.kazanim)
+      html += `<p class="kazanim-etiketi">Kazanım/süreç bileşeni: ${kacir(soru.kazanim)}</p>`;
     html += `</div>`;
   });
 
@@ -169,12 +245,9 @@ function renderKagit(veri) {
     </tr>`;
   });
   html += `</tbody></table>`;
-  if (veri.not_metni) html += `<p class="not-metni">${kacir(veri.not_metni)}</p>`;
+  if (veri.not_metni)
+    html += `<p class="not-metni">${kacir(veri.not_metni)}</p>`;
   html += `</div>`;
 
   kagitIcerik.innerHTML = html;
 }
-
-✦
-Click a text area and start typing.
-Analysis will appear automatically.

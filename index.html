@@ -25,7 +25,7 @@
       </svg>
     </div>
     <div>
-      <h1>Test Üretici</h1>
+      <h1>Ders Kâğıdı Üretici</h1>
       <p class="alt-yazi">Türkiye Yüzyılı Maarif Modeli müfredatına ve bağlam temelli soru yazım kılavuzuna göre, güncel kazanımlardan çoktan seçmeli test hazırlar.</p>
     </div>
   </header>
@@ -108,6 +108,20 @@
         </div>
       </div>
       <div id="kagit-icerik"></div>
+
+      <form id="revize-form" class="revize-kutusu no-print">
+        <label for="revize-istek">
+          <strong>Bir şeyi düzeltmek mi istiyorsunuz?</strong>
+          <span class="alan-aciklama">Neyin değişmesini istediğinizi yazın, Claude yalnızca o kısmı düzenlesin.</span>
+        </label>
+        <textarea id="revize-istek" rows="2"
+          placeholder="örn. 3. soru çok zor, daha kolay bir soruyla değiştir / 2. sorunun şıkları çok uzun, kısalt / bir soru daha ekle"></textarea>
+        <div class="revize-alt">
+          <span class="revize-durum" id="revize-durum"></span>
+          <button type="submit" class="ana-buton" id="revize-buton">Düzenle</button>
+        </div>
+        <p class="hata-mesaji" id="revize-hata" hidden></p>
+      </form>
     </section>
   </main>
 

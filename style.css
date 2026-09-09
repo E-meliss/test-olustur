@@ -274,6 +274,49 @@ textarea { resize: vertical; font-family: inherit; }
 }
 .alt-bilgi a { color: var(--yesil-koyu); }
 
+/* --- Düzeltme (revize) kutusu --- */
+.revize-kutusu {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1.5px dashed var(--cizgi-gri);
+}
+.revize-kutusu label { display: block; margin-bottom: 8px; }
+.revize-kutusu .alan-aciklama {
+  display: block;
+  font-weight: 400;
+  color: var(--murekkep-soluk);
+  font-size: .88rem;
+  margin-top: 2px;
+}
+.revize-kutusu textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: .98rem;
+  padding: 9px 11px;
+  border: 1.5px solid var(--cizgi-gri);
+  border-radius: 8px;
+  background: var(--kagit);
+  color: var(--murekkep);
+  resize: vertical;
+}
+.revize-kutusu textarea:focus {
+  outline: 3px solid var(--sari-vurgu);
+  outline-offset: 1px;
+  border-color: var(--yesil);
+}
+.revize-alt {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.revize-durum {
+  font-size: .88rem;
+  color: var(--murekkep-soluk);
+  font-style: italic;
+}
+
 /* --- Yanıt cevabı gizleme --- */
 .cevaplar-gizli .cevap-anahtari { display: none; }
 
