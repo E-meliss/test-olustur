@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ders Kağıdı Üretici · TYMM Müfredatına Göre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sayfa">
+
+  <header class="ust-baslik">
+    <div class="defter-simge" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="40" height="40">
+        <rect x="4" y="3" width="40" height="42" rx="3" fill="#fffdf7" stroke="#21303c" stroke-width="2"/>
+        <line x1="12" y1="3" x2="12" y2="45" stroke="#c1502e" stroke-width="2"/>
+        <line x1="16" y1="12" x2="40" y2="12" stroke="#cdd6dd" stroke-width="1.5"/>
+        <line x1="16" y1="19" x2="40" y2="19" stroke="#cdd6dd" stroke-width="1.5"/>
+        <line x1="16" y1="26" x2="40" y2="26" stroke="#cdd6dd" stroke-width="1.5"/>
+        <line x1="16" y1="33" x2="34" y2="33" stroke="#cdd6dd" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Ders Kâğıdı Üretici</h1>
+      <p class="alt-yazi">Türkiye Yüzyılı Maarif Modeli müfredatına ve bağlam temelli soru yazım kılavuzuna göre, güncel kazanımlardan test ve çalışma kâğıdı hazırlar.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel form-panel" id="form-panel">
+      <form id="test-form">
+
+        <div class="alan-grid">
+          <label class="alan">
+            <span>Ders</span>
+            <select id="ders" required>
+              <option value="Türkçe">Türkçe</option>
+              <option value="Matematik">Matematik</option>
+              <option value="Hayat Bilgisi">Hayat Bilgisi</option>
+              <option value="diger">Diğer (elle yazacağım)</option>
+            </select>
+          </label>
+          <input class="alan diger-ders" id="ders-diger" type="text" placeholder="Ders adını yazın (örn. İngilizce)" style="display:none">
+
+          <label class="alan">
+            <span>Sınıf</span>
+            <select id="sinif" required>
+              <option>1</option><option selected>2</option><option>3</option>
+              <option>4</option><option>5</option><option>6</option>
+              <option>7</option><option>8</option>
+            </select>
+          </label>
+
+          <label class="alan alan-genis">
+            <span>Ünite / Tema / Konu</span>
+            <input id="unite" type="text" required
+              placeholder="örn. 1. Tema: Sayılar ve Nicelikler (1)">
+          </label>
+
+          <label class="alan">
+            <span>Materyal türü</span>
+            <select id="materyal-turu">
+              <option value="test">Test (çoktan seçmeli)</option>
+              <option value="calisma-kagidi">Çalışma kâğıdı</option>
+              <option value="etkinlik">Etkinlik kâğıdı</option>
+            </select>
+          </label>
+
+          <label class="alan">
+            <span>Soru sayısı</span>
+            <input id="soru-sayisi" type="number" min="3" max="12" value="6">
+          </label>
+
+          <label class="alan">
+            <span>Şık sayısı</span>
+            <select id="sik-sayisi">
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+
+          <label class="alan alan-genis">
+            <span>Ek istekler <em>(isteğe bağlı — anneniz/öğretmen burada tam olarak ne istediğini yazabilir)</em></span>
+            <textarea id="ek-istek" rows="3"
+              placeholder="örn. Sorularda okul bahçesi teması kullanılsın, bir soru görsel/tablo içersin, son soru biraz daha zor olsun..."></textarea>
+          </label>
+        </div>
+
+        <div class="form-alt">
+          <button type="button" class="link-buton" id="ornek-doldur">Örnekle doldur</button>
+          <button type="submit" class="ana-buton" id="olustur-buton">Kâğıdı Oluştur</button>
+        </div>
+      </form>
+
+      <p class="hata-mesaji" id="hata-mesaji" hidden></p>
+    </section>
+
+    <section class="panel yukleniyor-panel" id="yukleniyor-panel" hidden>
+      <div class="kalem-yukleniyor" aria-hidden="true"></div>
+      <p id="yukleniyor-yazi">Güncel müfredat taranıyor, sorular hazırlanıyor…</p>
+      <p class="yukleniyor-not">Bu işlem genellikle 20–60 saniye sürer.</p>
+    </section>
+
+    <section class="panel sonuc-panel" id="sonuc-panel" hidden>
+      <div class="sonuc-arac-cubugu no-print">
+        <label class="anahtar-toggle">
+          <input type="checkbox" id="cevap-goster-toggle">
+          Öğretmen nüshasını (cevap anahtarını) göster
+        </label>
+        <div class="arac-butonlari">
+          <button class="ikincil-buton" id="yeni-kagit-buton">Yeni kâğıt oluştur</button>
+          <button class="ana-buton" id="yazdir-buton">Yazdır / PDF Kaydet</button>
+        </div>
+      </div>
+      <div id="kagit-icerik"></div>
+    </section>
+  </main>
+
+  <footer class="alt-bilgi no-print">
+    <p>Sorular <a href="https://tymm.meb.gov.tr" target="_blank" rel="noopener">tymm.meb.gov.tr</a> üzerindeki güncel öğretim programına dayanarak Claude tarafından o an üretilir. Yayımlamadan önce içerikleri gözden geçirmeniz önerilir.</p>
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
