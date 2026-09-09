@@ -1,8 +1,4 @@
-// =============================================================================
-// AYAR: Cloudflare Worker adresinizi kurulum tamamlandığında buraya yapıştırın.
-// Örnek: "https://meb-test-uretici.KULLANICI_ADINIZ.workers.dev"
-// =============================================================================
-const WORKER_URL = "https://meb-test-uretici.ORNEK-KULLANICI.workers.dev";
+const WORKER_URL = "https://test-hazirla.ezgi-melisc.workers.dev";
 
 const form = document.getElementById("test-form");
 const dersSelect = document.getElementById("ders");
