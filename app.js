@@ -1,8 +1,4 @@
-// =============================================================================
-// AYAR: Cloudflare Worker adresinizi kurulum tamamlandığında buraya yapıştırın.
-// Örnek: "https://meb-test-uretici.KULLANICI_ADINIZ.workers.dev"
-// =============================================================================
-const WORKER_URL = "https://meb-test-uretici.ORNEK-KULLANICI.workers.dev";
+const WORKER_URL = "https://test-hazirla.ezgi-melisc.workers.dev";
 
 const form = document.getElementById("test-form");
 const dersSelect = document.getElementById("ders");
@@ -23,7 +19,6 @@ document.getElementById("ornek-doldur").addEventListener("click", () => {
   dersDiger.style.display = "none";
   document.getElementById("sinif").value = "2";
   document.getElementById("unite").value = "1. Tema: Sayılar ve Nicelikler (1)";
-  document.getElementById("materyal-turu").value = "test";
   document.getElementById("soru-sayisi").value = "6";
   document.getElementById("sik-sayisi").value = "3";
   document.getElementById("ek-istek").value =
@@ -51,7 +46,7 @@ form.addEventListener("submit", async (e) => {
     ders,
     sinif: document.getElementById("sinif").value,
     unite: document.getElementById("unite").value.trim(),
-    materyalTuru: document.getElementById("materyal-turu").value,
+    materyalTuru: "test",
     soruSayisi: Number(document.getElementById("soru-sayisi").value) || 6,
     sikSayisi: Number(document.getElementById("sik-sayisi").value) || 3,
     ekIstek: document.getElementById("ek-istek").value.trim(),
@@ -62,11 +57,20 @@ form.addEventListener("submit", async (e) => {
   sonucPanel.hidden = true;
 
   try {
-    const yanit = await fetch(WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const controller = new AbortController();
+    const zamanAsimi = setTimeout(() => controller.abort(), 75_000); // 75 sn güvenlik sınırı
+
+    let yanit;
+    try {
+      yanit = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(zamanAsimi);
+    }
 
     if (!yanit.ok) {
       const detay = await yanit.text().catch(() => "");
@@ -86,9 +90,15 @@ form.addEventListener("submit", async (e) => {
     yukleniyorPanel.hidden = true;
     formPanel.hidden = false;
     hataMesaji.hidden = false;
-    hataMesaji.textContent =
-      "Kâğıt oluşturulamadı: " + err.message +
-      " — Worker adresinin doğru girildiğinden ve API anahtarının tanımlı olduğundan emin olun.";
+    if (err.name === "AbortError") {
+      hataMesaji.textContent =
+        "İstek çok uzun sürdü ve zaman aşımına uğradı. Lütfen soru sayısını azaltıp " +
+        "veya daha yaygın bilinen bir ünite/konu adı yazıp tekrar deneyin.";
+    } else {
+      hataMesaji.textContent =
+        "Kâğıt oluşturulamadı: " + err.message +
+        " — Worker adresinin doğru girildiğinden ve API anahtarının tanımlı olduğundan emin olun.";
+    }
   }
 });
 
@@ -164,3 +174,7 @@ function renderKagit(veri) {
 
   kagitIcerik.innerHTML = html;
 }
+
+✦
+Click a text area and start typing.
+Analysis will appear automatically.

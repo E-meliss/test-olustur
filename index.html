@@ -25,8 +25,8 @@
       </svg>
     </div>
     <div>
-      <h1>Ders Kâğıdı Üretici</h1>
-      <p class="alt-yazi">Türkiye Yüzyılı Maarif Modeli müfredatına ve bağlam temelli soru yazım kılavuzuna göre, güncel kazanımlardan test ve çalışma kâğıdı hazırlar.</p>
+      <h1>Test Üretici</h1>
+      <p class="alt-yazi">Türkiye Yüzyılı Maarif Modeli müfredatına ve bağlam temelli soru yazım kılavuzuna göre, güncel kazanımlardan çoktan seçmeli test hazırlar.</p>
     </div>
   </header>
 
@@ -62,15 +62,6 @@
           </label>
 
           <label class="alan">
-            <span>Materyal türü</span>
-            <select id="materyal-turu">
-              <option value="test">Test (çoktan seçmeli)</option>
-              <option value="calisma-kagidi">Çalışma kâğıdı</option>
-              <option value="etkinlik">Etkinlik kâğıdı</option>
-            </select>
-          </label>
-
-          <label class="alan">
             <span>Soru sayısı</span>
             <input id="soru-sayisi" type="number" min="3" max="12" value="6">
           </label>
@@ -102,7 +93,7 @@
     <section class="panel yukleniyor-panel" id="yukleniyor-panel" hidden>
       <div class="kalem-yukleniyor" aria-hidden="true"></div>
       <p id="yukleniyor-yazi">Güncel müfredat taranıyor, sorular hazırlanıyor…</p>
-      <p class="yukleniyor-not">Bu işlem genellikle 20–60 saniye sürer.</p>
+      <p class="yukleniyor-not">Bu işlem genellikle 20–60 saniye sürer (bilinmeyen bir ünite için biraz daha uzun sürebilir).</p>
     </section>
 
     <section class="panel sonuc-panel" id="sonuc-panel" hidden>
